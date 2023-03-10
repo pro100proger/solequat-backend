@@ -1,0 +1,26 @@
+server:
+  port: 8765
+
+spring:
+  application:
+    name: gateway
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+zuul:
+  routes:
+    customer:
+      path: /customer/**
+      service-id: customer
+      sensitive-headers:
+        -
+      strip-prefix: true
+    business-logic:
+      path: /business-logic/**
+      service-id: business-logic
+      sensitive-headers:
+        -
+      strip-prefix: true
