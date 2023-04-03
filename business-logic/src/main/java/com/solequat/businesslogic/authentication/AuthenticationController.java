@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("api/v1/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
@@ -19,6 +21,7 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> register(
         @RequestBody RegisterRequest request
     ) {
+        log.info("Controller: register user.");
         return ResponseEntity.ok(authenticationService.register(request));
     }
 
