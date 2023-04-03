@@ -4,24 +4,33 @@ server:
 spring:
   application:
     name: gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: registration
+          uri: lb://business-logic
+          predicates:
+            - Path=/api/v1/registration
+            - Method=POST
+        - id: login
+          uri: lb://business-logic
+          predicates:
+            - Path=/login
+            - Method=POST
+        - id: confirm
+          uri: lb://business-logic
+          predicates:
+            - Path=/api/v1/registration/confirm
+            - Method=GET
 
-zuul:
-  routes:
-    worker:
-      path: /worker/**
-      serviceId: worker
-      sensitive-headers:
-        -
-      strip-prefix: true
-    business-logic:
-      path: /business-logic/**
-      serviceId: business-logic
-      sensitive-headers:
-        -
-      strip-prefix: true
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
+
 
