@@ -1,15 +1,29 @@
 package com.solequat.businesslogic.authentication;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.TextStyle;
+import java.util.Locale;
+
+import javax.mail.SendFailedException;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.google.common.io.Files;
 import com.solequat.businesslogic.config.JwtUtil;
+import com.solequat.businesslogic.entity.ConfirmationToken;
 import com.solequat.businesslogic.entity.Role;
 import com.solequat.businesslogic.entity.User;
 import com.solequat.businesslogic.repository.UserRepository;
+import com.solequat.businesslogic.service.ConfirmationTokenService;
+import com.solequat.businesslogic.service.EmailSenderService;
+import com.solequat.businesslogic.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,13 +33,23 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthenticationService {
 
+    private final static String TOKEN_ALREADY_CONFIRMED = "Service: token %s is already confirmed";
+    private final static String TOKEN_EXPIRED = "Service: token %s expired";
+    private final static String LOGIN_ROUTE = "<meta http-equiv=\"refresh\" content=\"0;" +
+        " url=http://localhost:3000/login\" />";
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private  final AuthenticationManager authenticationManager;
+    private final ConfirmationTokenService confirmationTokenService;
+    private final UserService userService;
+    private final EmailSenderService emailSender;
 
-    public AuthenticationResponse register(RegisterRequest request) {
-        log.info("Service: register user.");
+    public AuthenticationResponse register(RegisterRequest request) throws IOException, SendFailedException {
+
+        log.info(String.format("Service: registering user with email %s", request.getEmail()));
+
         User user = User.builder()
             .firstName(request.getFirstName())
             .lastName(request.getLastName())
@@ -36,10 +60,52 @@ public class AuthenticationService {
         userRepository.save(user);
 
         String jwtToken = jwtUtil.generateToken(user);
+
+        ConfirmationToken confirmationToken = new ConfirmationToken(
+            jwtToken,
+            LocalDateTime.now(),
+            LocalDateTime.now().plusMinutes(15),
+            user
+        );
+
+        confirmationTokenService.saveConfirmationToken(confirmationToken);
+
+        String link = "http://localhost:8765/api/v1/registration/confirm?token=" + jwtToken;
+
+        emailSender.send(
+            request.getEmail(),
+            buildEmail(link));
+
         return AuthenticationResponse
             .builder()
             .token(jwtToken)
             .build();
+    }
+
+    @Transactional
+    public String confirmToken(String token) {
+        log.info(String.format("Service: confirming token %s", token));
+        ConfirmationToken confirmationToken = confirmationTokenService
+            .getToken(token)
+            .orElseThrow(() -> new RuntimeException("Service: Error with token " + token));
+
+        if (confirmationToken.getConfirmedAt() != null) {
+            log.error(String.format(TOKEN_ALREADY_CONFIRMED, token));
+            throw new RuntimeException();
+        }
+
+        LocalDateTime expiredAt = confirmationToken.getExpiresAt();
+
+        if (expiredAt.isBefore(LocalDateTime.now())) {
+            log.error(String.format(TOKEN_EXPIRED, token));
+            throw new RuntimeException();
+        }
+
+        confirmationTokenService.setConfirmedAt(token);
+        userService.enableUser(
+            confirmationToken.getUser().getEmail());
+
+        return LOGIN_ROUTE;
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -57,5 +123,21 @@ public class AuthenticationService {
             .builder()
             .token(jwtToken)
             .build();
+    }
+
+    private String buildEmail(String link) throws IOException {
+        String date = "\n" + LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL, Locale.US)
+            + " " + LocalDateTime.now().getDayOfMonth()
+            + ", " + LocalDateTime.now().getYear();
+
+        StringBuilder email = new StringBuilder(Files
+            .asCharSource(new File("business-logic/src/main/resources/templates/email.html"), StandardCharsets.UTF_8)
+            .read());
+
+        email
+            .insert(email.indexOf("Project") + 3, date)
+            .insert(email.indexOf("href=\"\"") + 6, link);
+
+        return email.toString();
     }
 }
