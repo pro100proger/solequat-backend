@@ -16,15 +16,15 @@ spring:
           predicates:
             - Path=/api/v1/registration
             - Method=POST
-        - id: login
-          uri: lb://business-logic
-          predicates:
-            - Path=/login
-            - Method=POST
         - id: confirm
           uri: lb://business-logic
           predicates:
             - Path=/api/v1/registration/confirm
+            - Method=GET
+        - id: authenticate
+          uri: lb://business-logic
+          predicates:
+            - Path=/api/v1/registration/authenticate
             - Method=GET
 
 

@@ -33,10 +33,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .findByEmail(email)
                 .orElseThrow(() -> new InternalAuthenticationServiceException(USER_NOT_FOUND_MSG));
 
-//        if (user.getIsActive() == null) {
-//            log.error(USER_NOT_FOUND_MSG);
-//            throw new InternalAuthenticationServiceException(USER_NOT_FOUND_MSG);
-//        }
+        if (user.getIsActive() == null) {
+            log.error(USER_NOT_FOUND_MSG);
+            throw new InternalAuthenticationServiceException(USER_NOT_FOUND_MSG);
+        }
 
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail())
