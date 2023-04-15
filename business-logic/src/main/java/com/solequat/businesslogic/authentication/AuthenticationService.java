@@ -50,6 +50,15 @@ public class AuthenticationService {
 
         log.info(String.format("Service: registering user with email %s", request.getEmail()));
 
+        boolean userExists = userRepository
+            .findByEmail(request.getEmail())
+            .isPresent();
+
+        if (userExists) {
+            log.error(String.format("Service: email %s already taken", request.getEmail()));
+            throw new RuntimeException();
+        }
+
         User user = User.builder()
             .firstName(request.getFirstName())
             .lastName(request.getLastName())
