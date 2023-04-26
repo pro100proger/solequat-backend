@@ -5,6 +5,7 @@ server:
 spring:
   application:
     name: gateway
+
   cloud:
     gateway:
       discovery:
@@ -17,16 +18,26 @@ spring:
           predicates:
             - Path=/api/v1/registration
             - Method=POST
+
         - id: confirm
           uri: lb://business-logic
           predicates:
             - Path=/api/v1/registration/confirm
             - Method=GET
+
         - id: authenticate
           uri: lb://business-logic
           predicates:
             - Path=/api/v1/registration/authenticate
             - Method=GET
+
+        - id: worker-service
+          uri: lb://worker
+          predicates:
+            - Path=/api/v1/**
+          filters:
+            - AuthenticationFilter
+
       globalcors:
         add-to-simple-url-handler-mapping: true
         corsConfigurations:
