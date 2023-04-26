@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:postgresql://localhost:5432/solequat</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="solequat_worker@localhost" uuid="d99b2b21-184e-407f-8f56-7f62c5065da6">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/solequat_worker</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

@@ -134,6 +134,10 @@ public class AuthenticationService {
             .build();
     }
 
+    public boolean validateToken(String token) {
+        return jwtUtil.validateToken(token);
+    }
+
     private String buildEmail(String link) throws IOException {
         String date = "\n" + LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL, Locale.US)
             + " " + LocalDateTime.now().getDayOfMonth()

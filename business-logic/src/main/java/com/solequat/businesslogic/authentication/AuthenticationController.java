@@ -46,6 +46,13 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> authenticate(
         @RequestBody AuthenticationRequest request
         ) {
+        log.info(String.format("Controller: authenticate user with email %s", request.getEmail()));
         return ResponseEntity.ok(authenticationService.authenticate(request));
+    }
+
+    @GetMapping("/validate")
+    public boolean validateToken(@RequestParam("token") String token) {
+        log.info(String.format("Controller: validate token %s", token));
+        return authenticationService.validateToken(token);
     }
 }
