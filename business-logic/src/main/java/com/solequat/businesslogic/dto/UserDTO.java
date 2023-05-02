@@ -1,7 +1,7 @@
 package com.solequat.businesslogic.dto;
 
 
-import com.solequat.businesslogic.entity.Role;
+import com.core.entity.Role;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.solequat.businesslogic.entity;
+package com.core.entity;
 
 import java.util.Collection;
 import java.util.List;

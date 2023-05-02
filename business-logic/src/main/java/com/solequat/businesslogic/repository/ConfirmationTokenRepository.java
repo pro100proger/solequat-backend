@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.solequat.businesslogic.entity.ConfirmationToken;
+import com.core.entity.ConfirmationToken;
 
 @Repository
 public interface ConfirmationTokenRepository

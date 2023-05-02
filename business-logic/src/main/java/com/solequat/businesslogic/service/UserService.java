@@ -1,7 +1,6 @@
 package com.solequat.businesslogic.service;
 
-import com.solequat.businesslogic.dto.UserDTO;
-import com.solequat.businesslogic.entity.User;
+import com.core.entity.User;
 
 public interface UserService {
 

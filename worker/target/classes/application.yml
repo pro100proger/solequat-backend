@@ -6,14 +6,14 @@ spring:
     name: worker
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/solequat_worker
+    url: jdbc:postgresql://localhost:5432/solequat
     username: postgres
     password: this1pass
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:

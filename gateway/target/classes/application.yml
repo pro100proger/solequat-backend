@@ -35,8 +35,7 @@ spring:
           uri: lb://worker
           predicates:
             - Path=/api/v1/**
-          filters:
-            - AuthenticationFilter
+
 
       globalcors:
         add-to-simple-url-handler-mapping: true

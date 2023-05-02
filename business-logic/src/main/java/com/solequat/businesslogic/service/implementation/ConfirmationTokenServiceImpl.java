@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.solequat.businesslogic.entity.ConfirmationToken;
+import com.core.entity.ConfirmationToken;
 import com.solequat.businesslogic.repository.ConfirmationTokenRepository;
 import com.solequat.businesslogic.service.ConfirmationTokenService;
 
