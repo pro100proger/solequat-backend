@@ -1,22 +1,33 @@
 package com.solequat.businesslogic.service.implementation;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.core.dto.EquationDTO;
 import com.core.dto.EquationHistoryDTO;
 import com.core.dto.EquationIdDTO;
 import com.core.dto.EquationIntermediateResultDTO;
 import com.core.dto.EquationResultDTO;
 import com.core.entity.Equation;
+import com.core.entity.LinearSystemRequest;
 import com.core.entity.User;
-import com.solequat.businesslogic.repository.WorkerClientRepository;
-import com.solequat.businesslogic.repository.UserRepository;
+import com.core.repository.EquationRepository;
+import com.core.repository.LinearSystemRepository;
+import com.core.repository.UserRepository;
 import com.solequat.businesslogic.service.WorkerClientService;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,33 +35,83 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class WorkerClientServiceImpl implements WorkerClientService {
 
-    private final WorkerClientRepository workerClientRepository;
+    private final EquationRepository equationRepository;
     private final UserRepository userRepository;
+    private final LinearSystemRepository linearSystemRepository;
     private final RestTemplate restTemplate;
 
     @Autowired
-    public WorkerClientServiceImpl(WorkerClientRepository workerClientRepository, UserRepository userRepository, RestTemplate restTemplate) {
-        this.workerClientRepository = workerClientRepository;
+    public WorkerClientServiceImpl(EquationRepository equationRepository, UserRepository userRepository,
+        LinearSystemRepository linearSystemRepository, RestTemplate restTemplate) {
+        this.equationRepository = equationRepository;
         this.userRepository = userRepository;
+        this.linearSystemRepository = linearSystemRepository;
         this.restTemplate = restTemplate;
     }
 
-    public EquationIntermediateResultDTO calculateEquationFirstStage(EquationDTO equationDTO, String userId) {
+    @Value("${routes.uris.route1}")
+    private String uri1;
+    @Value("${routes.uris.route2}")
+    private String uri2;
+    @Value("${routes.uris.route3}")
+    private String uri3;
+    @Value("${routes.uris.route4}")
+    private String uri4;
+    @Value("${routes.uris.route5}")
+    private String uri5;
+    @Value("${routes.uris.route6}")
+    private String uri6;
+
+
+    public EquationIntermediateResultDTO calculateEquationFirstStage(MultipartFile matrixFile, MultipartFile vectorFile, String userId)
+        throws IOException {
         log.info("WorkerClientService: Calculate request to worker");
 
-        Equation equation = new Equation(equationDTO.getEquationName());
+        LocalDateTime startCalculation = LocalDateTime.now();
 
-        User user = userRepository.findById(userId).orElseThrow(RuntimeException::new);
+        Equation equation = new Equation(startCalculation);
+
+        User user = userRepository.findById(userId).orElseThrow(EntityNotFoundException::new);
         equation.setUser(user);
+        equationRepository.save(equation);
 
-        workerClientRepository.save(equation);
+        LinearSystemRequest linearSystemRequest = new LinearSystemRequest();
+        byte[] matrixBytes = matrixFile.getBytes();
+        String fileContent = new String(matrixBytes);
+
+        double[][] matrixArray = Arrays.stream(fileContent.trim().split("\n"))
+            .map(line -> Arrays.stream(line.trim().split(";"))
+                .mapToDouble(Double::parseDouble)
+                .toArray())
+            .toArray(double[][]::new);
+
+        log.info(Arrays.deepToString(matrixArray));
+
+        linearSystemRequest.setMatrix(matrixArray);
+
+        byte[] vectorBytes = vectorFile.getBytes();
+        String fileContent2 = new String(vectorBytes);
+
+        double[] vectorArray = Arrays.stream(fileContent2.trim().split("\n"))
+            .flatMap(line -> Arrays.stream(line.trim().split("\\s+")))
+            .filter(s -> !s.isEmpty())
+            .mapToDouble(Double::parseDouble)
+            .toArray();
+
+        log.info(Arrays.toString(vectorArray));
+
+        linearSystemRequest.setVector(vectorArray);
+        linearSystemRepository.save(linearSystemRequest);
 
         EquationIdDTO equationIdDTO = new EquationIdDTO();
-        equationIdDTO.setId(equation.getId());
+        equationIdDTO.setEquationId(equation.getId());
+        equationIdDTO.setLinearSystemId(linearSystemRequest.getId());
+
+
 
         log.info("WorkerClientService: restTemplate request to worker");
         EquationIntermediateResultDTO equationIntermediateResultDTO = restTemplate.postForObject(
-            "http://localhost:8765/worker/api/v1/equation",
+            uri1,
             equationIdDTO,
             EquationIntermediateResultDTO.class);
 
@@ -62,16 +123,45 @@ public class WorkerClientServiceImpl implements WorkerClientService {
         log.info("WorkerClientService: Get equation by id request to worker");
 
         return restTemplate.getForObject(
-            "http://localhost:8765/worker/api/v1/equation/" + id,
+            uri2 + id,
             EquationResultDTO.class);
     }
 
     public List<EquationHistoryDTO> getAllEquationsByUserId(String userId) {
         log.info("WorkerClientService: Get all equations by user id {} request to worker", userId);
-        return restTemplate.getForObject(
-            "http://localhost:8765/worker/api/v1/equations/" + userId,
+        ResponseEntity<List<EquationHistoryDTO>> response = restTemplate
+            .exchange(
+                uri3 + userId,
+            HttpMethod.GET,
             null,
             new ParameterizedTypeReference<List<EquationHistoryDTO>>() {}
         );
+
+        return response.getBody();
     }
+
+    public byte[] getResultById(String id) {
+        log.info("WorkerClientService: Get result by id. ");
+
+        return restTemplate.getForObject(
+            uri4 + id,
+                byte[].class);
+    }
+
+    public byte[] getVectorById(String id) {
+        log.info("WorkerClientService: Get vector by id. ");
+
+        return restTemplate.getForObject(
+            uri5 + id,
+            byte[].class);
+    }
+
+    public byte[] getMatrixById(String id) {
+        log.info("WorkerClientService: Get matrix by id: {}", id);
+
+        return restTemplate.getForObject(
+            uri6 + id,
+            byte[].class);
+    }
+
 }

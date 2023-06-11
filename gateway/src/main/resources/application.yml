@@ -29,12 +29,49 @@ spring:
           uri: lb://business-logic
           predicates:
             - Path=/api/v1/registration/authenticate
-            - Method=GET
+            - Method=POST
 
-        - id: worker-service
+        - id: calculate_equation
+          uri: lb://business-logic
+          predicates:
+            - Path=/api/v1/equation
+            - Method=POST
+
+        - id: calculate_equation
           uri: lb://worker
           predicates:
-            - Path=/api/v1/**
+            - Path=/api/v1/equation
+            - Method=POST
+
+        - id: get_all_equations
+          uri: lb://worker
+          predicates:
+            - Path=/api/v1/equations
+            - Method=GET
+
+        - id: get_equation
+          uri: lb://worker
+          predicates:
+            - Path=/api/v1/equation
+            - Method=GET
+
+        - id: get_result
+          uri: lb://worker
+          predicates:
+            - Path=/api/v1/result
+            - Method=GET
+
+        - id: get_vector
+          uri: lb://worker
+          predicates:
+            - Path=/api/v1/vector
+            - Method=GET
+
+        - id: get_matrix
+          uri: lb://worker
+          predicates:
+            - Path=/api/v1/matrix
+            - Method=GET
 
 
       globalcors:

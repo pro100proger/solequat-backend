@@ -28,9 +28,6 @@ public class Equation {
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     private String id;
 
-    @Column(name="equation_name")
-    private String equationName;
-
     @Column(name="duration")
     private Long duration;
 
@@ -39,11 +36,16 @@ public class Equation {
     @Column(name="end_calculation")
     private LocalDateTime endCalculation;
 
+    @Column(name="data_id")
+    private String dataId;
+    @Column(name="result_id")
+    private String resultId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_logs_user"))
     private User user;
 
-    public Equation(String equationName) {
-        this.equationName = equationName;
+    public Equation(LocalDateTime startCalculation) {
+        this.startCalculation = startCalculation;
     }
 }

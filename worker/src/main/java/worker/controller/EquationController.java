@@ -19,14 +19,12 @@ import com.core.dto.EquationResultDTO;
 
 import lombok.extern.slf4j.Slf4j;
 import worker.service.EquationService;
-//import com.core.CoreApplication;
 
 @Slf4j
 @RestController
 @RequestMapping("api/v1")
 public class EquationController {
     private final EquationService equationService;
-//    private final CoreApplication coreApplication = new CoreApplication();
 
     @Autowired
     public EquationController(EquationService equationService) {
@@ -35,7 +33,7 @@ public class EquationController {
 
     @PostMapping("/equation")
     public ResponseEntity<EquationIntermediateResultDTO> calculateEquation
-        (@RequestBody EquationIdDTO equationIdDTO) {
+        (@RequestBody EquationIdDTO equationIdDTO) throws Exception {
         log.info("EquationController: calculate equation");
         return ResponseEntity.status(HttpStatus.OK).body(
             equationService.calculateEquationFirstStage(equationIdDTO));
@@ -43,16 +41,34 @@ public class EquationController {
 
 
     @GetMapping("/equation/{id}")
-    public ResponseEntity<EquationResultDTO> getPermutationById(@PathVariable String id) {
-        log.info("Get equation by id {}", id);
+    public ResponseEntity<EquationResultDTO> getEquationById(@PathVariable String id) {
+        log.info("EquationController: Get equation by id {}", id);
         return ResponseEntity.status(HttpStatus.OK).body(
             equationService.getEquationById(id));
     }
 
     @GetMapping("/equations/{userId}")
-    public ResponseEntity<List<EquationHistoryDTO>> getAllPermutations(@PathVariable String userId) {
-        log.info("Get all equations of the user with id {}", userId);
+    public ResponseEntity<List<EquationHistoryDTO>> getAllEquations(@PathVariable String userId) {
+        log.info("EquationController: Get all equations of the user with id {}", userId);
         return ResponseEntity.status(HttpStatus.OK).body(
             equationService.getAllEquationsByUserId(userId));
+    }
+
+    @GetMapping("/result/{id}")
+    public  byte[] getResultById(@PathVariable String id) throws Exception {
+        log.info("EquationController: Get result by id {}", id);
+        return equationService.getResultById(id);
+    }
+
+    @GetMapping("/vector/{id}")
+    public byte[] getVectorById(@PathVariable String id) throws Exception {
+        log.info("EquationController: Get vector by id {}", id);
+        return equationService.getVectorById(id);
+    }
+
+    @GetMapping("/matrix/{id}")
+    public byte[] getMatrixById(@PathVariable String id) throws Exception {
+        log.info("EquationController: Get matrix by id {}", id);
+        return equationService.getMatrixById(id);
     }
 }

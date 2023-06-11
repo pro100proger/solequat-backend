@@ -3,21 +3,26 @@ package com.solequat.businesslogic.service.implementation;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.core.entity.ConfirmationToken;
-import com.solequat.businesslogic.repository.ConfirmationTokenRepository;
+import com.core.repository.ConfirmationTokenRepository;
 import com.solequat.businesslogic.service.ConfirmationTokenService;
 
-import lombok.AllArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
-@AllArgsConstructor
 @Slf4j
 public class ConfirmationTokenServiceImpl implements ConfirmationTokenService {
 
     private final ConfirmationTokenRepository confirmationTokenRepository;
+
+    @Autowired
+    public ConfirmationTokenServiceImpl(ConfirmationTokenRepository confirmationTokenRepository) {
+        this.confirmationTokenRepository = confirmationTokenRepository;
+    }
 
     @Override
     public void saveConfirmationToken(ConfirmationToken token) {

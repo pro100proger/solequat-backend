@@ -4,9 +4,10 @@ import javax.persistence.EntityNotFoundException;
 
 import org.springframework.stereotype.Service;
 
+import com.core.repository.UserRepository;
 import com.core.entity.User;
-import com.solequat.businesslogic.repository.UserRepository;
 import com.solequat.businesslogic.service.UserService;
+
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

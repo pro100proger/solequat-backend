@@ -9,15 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class EquationHistoryDTO {
 
-    private String equationName;
+    private String id;
     private LocalDateTime startCalculation;
     private LocalDateTime endCalculation;
     private long duration;
 
-    public EquationHistoryDTO(EquationHistoryDTO permutationHistoryDTO) {
-        this.equationName = permutationHistoryDTO.getEquationName();
-        this.startCalculation = permutationHistoryDTO.getStartCalculation();
-        this.endCalculation = permutationHistoryDTO.getEndCalculation();
-        this.duration = permutationHistoryDTO.getDuration();
-    }
 }

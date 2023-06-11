@@ -18,12 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.core.entity.ConfirmationToken;
 import com.core.entity.Role;
 import com.core.entity.User;
+import com.core.repository.UserRepository;
 import com.google.common.io.Files;
 import com.solequat.businesslogic.config.JwtUtil;
-import com.solequat.businesslogic.repository.UserRepository;
 import com.solequat.businesslogic.service.ConfirmationTokenService;
 import com.solequat.businesslogic.service.EmailSenderService;
 import com.solequat.businesslogic.service.UserService;
+
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

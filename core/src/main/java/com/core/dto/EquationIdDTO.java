@@ -5,5 +5,6 @@ import lombok.Data;
 @Data
 public class EquationIdDTO {
 
-    private String id;
+    private String equationId;
+    private String linearSystemId;
 }

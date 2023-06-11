@@ -8,4 +8,7 @@ import lombok.Data;
 public class EquationResultDTO {
     private long duration;
     private LocalDateTime endCalculation;
+    private LocalDateTime startCalculation;
+    private String dataId;
+    private String resultId;
 }
