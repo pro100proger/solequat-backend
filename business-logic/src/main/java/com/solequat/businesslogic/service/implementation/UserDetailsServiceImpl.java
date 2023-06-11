@@ -7,8 +7,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.solequat.businesslogic.entity.User;
-import com.solequat.businesslogic.repository.UserRepository;
+import com.core.entity.User;
+import com.core.repository.UserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -1,0 +1,13 @@
+E:\Java\solequat\core\src\main\java\com\core\dto\EquationDTO.java
+E:\Java\solequat\core\src\main\java\com\core\repository\WorkerClientRepository.java
+E:\Java\solequat\core\src\main\java\com\core\dto\EquationIntermediateResultDTO.java
+E:\Java\solequat\core\src\main\java\com\core\entity\Role.java
+E:\Java\solequat\core\src\main\java\com\core\CoreApplication.java
+E:\Java\solequat\core\src\main\java\com\core\dto\EquationHistoryDTO.java
+E:\Java\solequat\core\src\main\java\com\core\dto\EquationResultDTO.java
+E:\Java\solequat\core\src\main\java\com\core\entity\User.java
+E:\Java\solequat\core\src\main\java\com\core\repository\UserRepository.java
+E:\Java\solequat\core\src\main\java\com\core\entity\Equation.java
+E:\Java\solequat\core\src\main\java\com\core\dto\EquationIdDTO.java
+E:\Java\solequat\core\src\main\java\com\core\entity\ConfirmationToken.java
+E:\Java\solequat\core\src\main\java\com\core\repository\ConfirmationTokenRepository.java

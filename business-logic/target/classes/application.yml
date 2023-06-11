@@ -17,6 +17,11 @@ spring:
   application:
     name: business-logic
 
+  data:
+    mongodb:
+      uri: mongodb+srv://program_creator:posgrest1132@cluster0.isxtblr.mongodb.net/LinearSystem?retryWrites=true&w=majority
+      database: LinearSystem
+
   datasource:
     url: jdbc:postgresql://localhost:5432/solequat
     username: postgres
@@ -25,7 +30,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
@@ -37,3 +42,13 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
+
+
+routes:
+  uris:
+    route1: http://localhost:8765/worker/api/v1/equation
+    route2: http://localhost:8765/worker/api/v1/equation/
+    route3: http://localhost:8765/worker/api/v1/equations/
+    route4: http://localhost:8765/worker/api/v1/result/
+    route5: http://localhost:8765/worker/api/v1/vector/
+    route6: http://localhost:8765/worker/api/v1/matrix/

@@ -2,7 +2,7 @@ package com.solequat.businesslogic.service;
 
 import java.util.Optional;
 
-import com.solequat.businesslogic.entity.ConfirmationToken;
+import com.core.entity.ConfirmationToken;
 
 public interface ConfirmationTokenService {
     void saveConfirmationToken(ConfirmationToken token);
