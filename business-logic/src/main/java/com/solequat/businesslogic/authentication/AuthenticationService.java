@@ -145,7 +145,7 @@ public class AuthenticationService {
             + ", " + LocalDateTime.now().getYear();
 
         StringBuilder email = new StringBuilder(Files
-            .asCharSource(new File("business-logic/src/main/resources/templates/email.html"), StandardCharsets.UTF_8)
+            .asCharSource(new File("business-logic/src/main/resources/templates/emailConfirmationLetter.html"), StandardCharsets.UTF_8)
             .read());
 
         email
