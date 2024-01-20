@@ -34,8 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthenticationService {
 
-    private final static String TOKEN_ALREADY_CONFIRMED = "Service: token %s is already confirmed";
-    private final static String TOKEN_EXPIRED = "Service: token %s expired";
+    private final static String TOKEN_ALREADY_CONFIRMED = "AuthenticationService: token %s is already confirmed";
+    private final static String TOKEN_EXPIRED = "AuthenticationService: token %s expired";
     private final static String LOGIN_ROUTE = "<meta http-equiv=\"refresh\" content=\"0;" +
         " url=http://localhost:3000/login\" />";
 
@@ -49,14 +49,14 @@ public class AuthenticationService {
 
     public AuthenticationResponse register(RegisterRequest request) throws IOException, SendFailedException {
 
-        log.info(String.format("Service: registering user with email %s", request.getEmail()));
+        log.info(String.format("AuthenticationService: registering user with email %s", request.getEmail()));
 
         boolean userExists = userRepository
             .findByEmail(request.getEmail())
             .isPresent();
 
         if (userExists) {
-            log.error(String.format("Service: email %s already taken", request.getEmail()));
+            log.error(String.format("AuthenticationService: email %s already taken", request.getEmail()));
             throw new RuntimeException();
         }
 
@@ -94,10 +94,10 @@ public class AuthenticationService {
 
     @Transactional
     public String confirmToken(String token) {
-        log.info(String.format("Service: confirming token %s", token));
+        log.info(String.format("AuthenticationService: confirming token %s", token));
         ConfirmationToken confirmationToken = confirmationTokenService
             .getToken(token)
-            .orElseThrow(() -> new RuntimeException("Service: Error with token " + token));
+            .orElseThrow(() -> new RuntimeException("AuthenticationService: Error with token " + token));
 
         if (confirmationToken.getConfirmedAt() != null) {
             log.error(String.format(TOKEN_ALREADY_CONFIRMED, token));
@@ -145,7 +145,7 @@ public class AuthenticationService {
             + ", " + LocalDateTime.now().getYear();
 
         StringBuilder email = new StringBuilder(Files
-            .asCharSource(new File("business-logic/src/main/resources/templates/email.html"), StandardCharsets.UTF_8)
+            .asCharSource(new File("business-logic/src/main/resources/templates/emailConfirmationLetter.html"), StandardCharsets.UTF_8)
             .read());
 
         email
