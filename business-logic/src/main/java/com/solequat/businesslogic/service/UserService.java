@@ -6,6 +6,7 @@ import javax.mail.SendFailedException;
 
 import org.hibernate.service.spi.ServiceException;
 
+import com.core.dto.EmailDTO;
 import com.core.dto.PasswordDTO;
 import com.core.dto.UserEmailDTO;
 import com.core.dto.UsernameDTO;
@@ -17,9 +18,12 @@ public interface UserService {
 
     User findUserByEmail(String email);
 
+    EmailDTO getEmail(User user);
+    UsernameDTO getUsername(User user);
+
     UsernameDTO updateUsername(User user, UsernameDTO usernameDTO);
 
-    String updateEmail(User user, UserEmailDTO userEmailDTO) throws IOException, SendFailedException;
+    EmailDTO updateEmail(User user, UserEmailDTO userEmailDTO) throws IOException, SendFailedException;
 
     String updatePassword(User user, PasswordDTO newPassword) throws ServiceException;
 }

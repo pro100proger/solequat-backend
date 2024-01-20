@@ -12,10 +12,10 @@ import javax.mail.SendFailedException;
 import javax.persistence.EntityNotFoundException;
 
 import org.hibernate.service.spi.ServiceException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.core.dto.EmailDTO;
 import com.core.dto.PasswordDTO;
 import com.core.dto.UserEmailDTO;
 import com.core.dto.UsernameDTO;
@@ -59,9 +59,22 @@ public class UserServiceImpl implements UserService {
             orElseThrow(EntityNotFoundException::new);
     }
 
+    @Override
+    public UsernameDTO getUsername(User user) {
+        log.info(String.format("UserServiceImpl: get the user's username with the email %s", user.getEmail()));
+        return new UsernameDTO(user.getFirstName(), user.getLastName());
+    }
+
+    @Override
+    public EmailDTO getEmail(User user) {
+        log.info(String.format("UserServiceImpl: get the user's email with the email %s", user.getEmail()));
+        return new EmailDTO(user.getEmail());
+    }
+
+    @Override
     public UsernameDTO updateUsername(User user, UsernameDTO usernameDTO) {
-        log.info(String.format("UserServiceImpl: updating username with %s %s",
-            usernameDTO.getFirstName(), usernameDTO.getLastName()));
+        log.info(String.format("UserServiceImpl: updating the user's username with %s %s",
+            user.getFirstName(), user.getLastName()));
 
         user.setFirstName(usernameDTO.getFirstName());
         user.setLastName(usernameDTO.getLastName());
@@ -69,9 +82,10 @@ public class UserServiceImpl implements UserService {
         return usernameDTO;
     }
 
+    @Override
     @Transactional
-    public String updateEmail(User user, UserEmailDTO userEmailDTO) throws IOException, SendFailedException {
-        log.info(String.format("UserServiceImpl: updating user email with id %s", user.getId()));
+    public EmailDTO updateEmail(User user, UserEmailDTO userEmailDTO) throws IOException, SendFailedException {
+        log.info(String.format("UserServiceImpl: updating the user's email with email %s", user.getEmail()));
 
         String oldEmailDB = findUserByEmail(user.getEmail()).getEmail();
         if (!Objects.equals(oldEmailDB, userEmailDTO.getOldEmail())) {
@@ -113,7 +127,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(userEmailDTO.getNewEmail());
         userRepository.save(user);
 
-        return user.getEmail();
+        return new EmailDTO(user.getEmail());
     }
 
     private String buildEmail(String link) throws IOException {
@@ -136,8 +150,9 @@ public class UserServiceImpl implements UserService {
         return email.toString();
     }
 
-
+    @Override
     public String updatePassword(User user, PasswordDTO passwordDTO) throws ServiceException {
+        log.info(String.format("UserServiceImpl: updating the user's password with email %s", user.getEmail()));
 
         boolean checkPasswords = applicationConfig.passwordEncoder().
             matches(passwordDTO.getOldPassword(), user.getPassword());
