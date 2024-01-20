@@ -11,21 +11,24 @@ import java.util.Objects;
 import javax.mail.SendFailedException;
 import javax.persistence.EntityNotFoundException;
 
+import org.hibernate.service.spi.ServiceException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.core.dto.PasswordDTO;
 import com.core.dto.UserEmailDTO;
 import com.core.dto.UsernameDTO;
 import com.core.entity.ConfirmationToken;
 import com.core.repository.ConfirmationTokenRepository;
 import com.core.repository.UserRepository;
 import com.core.entity.User;
+import com.solequat.businesslogic.config.ApplicationConfig;
 import com.solequat.businesslogic.config.JwtUtil;
 import com.solequat.businesslogic.service.ConfirmationTokenService;
 import com.solequat.businesslogic.service.EmailSenderService;
 import com.solequat.businesslogic.service.UserService;
-
+import com.solequat.businesslogic.validator.PasswordValidator;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +42,8 @@ public class UserServiceImpl implements UserService {
     private final ConfirmationTokenRepository confirmationTokenRepository;
     private final ConfirmationTokenService confirmationTokenService;
     private final EmailSenderService emailSender;
+    private final ApplicationConfig applicationConfig;
+    private final PasswordValidator passwordValidator;
 
 
     @Override
@@ -65,12 +70,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional
-    public UserEmailDTO updateEmail(User user, UserEmailDTO userEmailDTO) throws IOException, SendFailedException {
+    public String updateEmail(User user, UserEmailDTO userEmailDTO) throws IOException, SendFailedException {
         log.info(String.format("UserServiceImpl: updating user email with id %s", user.getId()));
 
         String oldEmailDB = findUserByEmail(user.getEmail()).getEmail();
-        log.info(String.format("userEmailDTO %s", userEmailDTO.getOldEmail()));
-        log.info(String.format("oldEmailDB %s", oldEmailDB));
         if (!Objects.equals(oldEmailDB, userEmailDTO.getOldEmail())) {
             throw new RuntimeException(
                 String.format("The old email %s you entered does not match the old email in the database.",
@@ -110,7 +113,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(userEmailDTO.getNewEmail());
         userRepository.save(user);
 
-        return userEmailDTO;
+        return user.getEmail();
     }
 
     private String buildEmail(String link) throws IOException {
@@ -132,4 +135,27 @@ public class UserServiceImpl implements UserService {
 
         return email.toString();
     }
+
+
+    public String updatePassword(User user, PasswordDTO passwordDTO) throws ServiceException {
+
+        boolean checkPasswords = applicationConfig.passwordEncoder().
+            matches(passwordDTO.getOldPassword(), user.getPassword());
+
+        if (checkPasswords) {
+            if (passwordValidator.test(passwordDTO.getPassword())) {
+                passwordDTO.setPassword(applicationConfig.passwordEncoder().encode(passwordDTO.getPassword()));
+            } else {
+                throw new ServiceException("UserServiceImpl: password must contain at least 8 characters (letters and numbers)");
+            }
+        } else {
+            throw new ServiceException("UserServiceImpl: old password not matches with entered password ");
+        }
+
+        user.setPassword(passwordDTO.getPassword());
+        userRepository.save(user);
+
+        return "Your password successfully updated.";
+    }
+
 }
