@@ -9,7 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="core" />
         <module name="business-logic" />
-        <module name="worker" />
+        <module name="test" />
         <module name="eureka-server" />
         <module name="gateway" />
       </profile>
@@ -25,7 +25,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="eureka-server" options="" />
       <module name="eurekaserver" options="" />
-      <module name="worker" options="" />
+      <module name="test" options="" />
     </option>
   </component>
 </project>
