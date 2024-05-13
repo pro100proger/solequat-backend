@@ -85,6 +85,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+#      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://testdockersolequat1-eureka-1:8761/eureka
 
 

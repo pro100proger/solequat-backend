@@ -23,7 +23,8 @@ spring:
       database: LinearSystem
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/solequat
+#    url: jdbc:postgresql://localhost:5432/solequat
+    url: jdbc:postgresql://testdockersolequat1-postgres-1:5432/solequat
     username: postgres
     password: this1pass
     driver-class-name: org.postgresql.Driver
@@ -41,7 +42,8 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+#      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://testdockersolequat1-eureka-1:8761/eureka
 
 
 routes:
