@@ -1,0 +1,7 @@
+com\solequat\worker\service\implementation\EquationServiceImpl.class
+com\solequat\worker\WorkerApplication.class
+com\solequat\worker\service\EquationService.class
+com\solequat\worker\config\WorkerConfig.class
+com\solequat\worker\config\WorkerSecurityConfig.class
+com\solequat\worker\ServletInitializer.class
+com\solequat\worker\controller\EquationController.class
