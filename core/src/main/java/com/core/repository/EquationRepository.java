@@ -9,6 +9,7 @@ import com.core.entity.Equation;
 
 public interface EquationRepository extends JpaRepository<Equation, String> {
 
+
     Equation getEquationById(String id);
     Optional<List<Equation>> getAllEquationsByUserId(String userId);
 }
