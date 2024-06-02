@@ -1,0 +1,5 @@
+com\solequat\gateway\GatewayApplication.class
+com\solequat\gateway\filter\AuthenticationFilter$Config.class
+com\solequat\gateway\HealthCheckController.class
+com\solequat\gateway\filter\AuthenticationFilter.class
+com\solequat\gateway\config\GatewayConfig.class

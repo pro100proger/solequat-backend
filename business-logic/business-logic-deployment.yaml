@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: business-logic-deployment
+  labels:
+    app: business-logic
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: business-logic
+  template:
+    metadata:
+      labels:
+        app: business-logic
+    spec:
+      containers:
+        - name: business-logic
+          image: business-logic
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8081
+          env:
+            - name: POSTGRES_DB
+              value: solequat
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: this1pass
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: business-logic
+spec:
+  selector:
+    app: business-logic
+  ports:
+    - protocol: TCP
+      port: 8081 # 8762
+      targetPort: 8081

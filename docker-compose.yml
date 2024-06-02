@@ -4,7 +4,8 @@ services:
 #    build:
 #      context: .
 #      dockerfile: "./eureka-server/Dockerfile"
-    image: eureka-test
+#    image: eureka-test
+    image: eureka
 #    container_name: eureka-test
     ports:
       - "8761:8761"
@@ -17,7 +18,8 @@ services:
 
   gateway:
 #    build: ./gateway
-    image: gateway-test
+#    image: gateway-test
+    image: gateway
     ports:
       - "8765:8765"
     depends_on:
@@ -32,38 +34,41 @@ services:
 
   business-logic:
 #    build: ./business-logic
-    image: business-logic-test
+#    image: business-logic-test
+    image: business-logic
     ports:
       - "8085:8085"
     depends_on:
       gateway:
         condition: service_healthy
-      postgres:
+      postgres1:
         condition: service_healthy
 
   worker1:
 #    build: ./worker
-    image: worker-test
+#    image: worker-test
+    image: worker
     ports:
       - "8084:8084"
     depends_on:
       gateway:
         condition: service_healthy
-      postgres:
+      postgres1:
         condition: service_healthy
 
   worker2:
     #    build: ./worker
-    image: worker-test
+#    image: worker-test
+    image: worker
     ports:
       - "8087:8084"
     depends_on:
       gateway:
         condition: service_healthy
-      postgres:
+      postgres1:
         condition: service_healthy
 
-  postgres:
+  postgres1:
     image: postgres:latest
     restart: always
     ports:

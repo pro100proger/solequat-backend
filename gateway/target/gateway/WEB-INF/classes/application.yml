@@ -1,0 +1,92 @@
+server:
+  port: 8765
+
+
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: registration
+          uri: lb://business-logic
+          predicates:
+            - Path=/api/v1/registration
+            - Method=POST
+
+        - id: confirm
+          uri: lb://business-logic
+          predicates:
+            - Path=/api/v1/registration/confirm
+            - Method=GET
+
+        - id: authenticate
+          uri: lb://business-logic
+          predicates:
+            - Path=/api/v1/registration/authenticate
+            - Method=POST
+
+        - id: calculate_equation
+          uri: lb://business-logic
+          predicates:
+            - Path=/api/v1/equation
+            - Method=POST
+
+        - id: calculate_equation
+          uri: lb://worker
+          predicates:
+            - Path=/api/v1/equation
+            - Method=POST
+
+        - id: get_all_equations
+          uri: lb://worker
+          predicates:
+            - Path=/api/v1/equations
+            - Method=GET
+
+        - id: get_equation
+          uri: lb://worker
+          predicates:
+            - Path=/api/v1/equation
+            - Method=GET
+
+        - id: get_result
+          uri: lb://worker
+          predicates:
+            - Path=/api/v1/result
+            - Method=GET
+
+        - id: get_vector
+          uri: lb://worker
+          predicates:
+            - Path=/api/v1/vector
+            - Method=GET
+
+        - id: get_matrix
+          uri: lb://worker
+          predicates:
+            - Path=/api/v1/matrix
+            - Method=GET
+
+
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedHeaders: "*"
+            allowedMethods: "*"
+
+eureka:
+  client:
+    service-url:
+      #      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://eureka:8761/eureka
+#      defaultZone: http://testdockersolequat1-eureka-1:8761/eureka
+
+
