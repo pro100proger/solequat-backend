@@ -12,4 +12,6 @@ public interface EquationRepository extends JpaRepository<Equation, String> {
 
     Equation getEquationById(String id);
     Optional<List<Equation>> getAllEquationsByUserId(String userId);
+
+    Optional<List<Equation>> getAllEquationsByUserIdAndIsPaid(String userId, Boolean isPaid);
 }

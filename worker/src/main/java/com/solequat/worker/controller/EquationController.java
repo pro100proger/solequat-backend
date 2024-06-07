@@ -16,6 +16,7 @@ import com.core.dto.EquationHistoryDTO;
 import com.core.dto.EquationIdDTO;
 import com.core.dto.EquationIntermediateResultDTO;
 import com.core.dto.EquationResultDTO;
+import com.core.dto.PaymentDTO;
 import com.solequat.worker.service.EquationService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -70,5 +71,12 @@ public class EquationController {
     public byte[] getMatrixById(@PathVariable String id) throws Exception {
         log.info("EquationController: Get matrix by id {}", id);
         return equationService.getMatrixById(id);
+    }
+
+    @GetMapping("/payment/{userId}")
+    public ResponseEntity<PaymentDTO> getAllEquationsByUserIdAndIsPaid(@PathVariable String userId) {
+        log.info("EquationController: Get all equations of the user with id {}", userId);
+        return ResponseEntity.status(HttpStatus.OK).body(
+            equationService.getAllEquationsByUserIdAndIsPaid(userId));
     }
 }

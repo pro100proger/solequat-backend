@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.core.dto.EquationHistoryDTO;
 import com.core.dto.EquationIntermediateResultDTO;
 import com.core.dto.EquationResultDTO;
+import com.core.dto.PaymentDTO;
 
 public interface WorkerClientService {
 
@@ -21,4 +22,6 @@ public interface WorkerClientService {
     byte[] getResultById(String id);
     byte[] getVectorById(String id);
     byte[] getMatrixById(String id);
+
+    PaymentDTO getAllEquationsByUserIdAndIsPaid(String userId);
 }

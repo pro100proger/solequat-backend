@@ -1,6 +1,7 @@
 package com.solequat.worker.service.implementation;
 
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import com.core.dto.EquationHistoryDTO;
 import com.core.dto.EquationIdDTO;
 import com.core.dto.EquationIntermediateResultDTO;
 import com.core.dto.EquationResultDTO;
+import com.core.dto.PaymentDTO;
 import com.core.entity.Equation;
 import com.core.entity.LinearSystemRequest;
 import com.core.entity.LinearSystemResult;
@@ -109,7 +111,7 @@ public class EquationServiceImpl implements EquationService {
         duration = finish - start;
 
         secondStageResult.setDuration(duration);
-        equation.setDuration(duration / 60);
+        equation.setDuration(duration);
 
         LocalDateTime endCalculation =  LocalDateTime.now().plusSeconds(duration);
 
@@ -214,5 +216,30 @@ public class EquationServiceImpl implements EquationService {
         } else {
             throw new Exception("Error: linearSystemRequest is not present");
         }
+    }
+
+    public PaymentDTO getAllEquationsByUserIdAndIsPaid(String userId) {
+        log.info("EquationService: Get all equations by user id and isPaid {} ", userId);
+        List<Equation> equations = equationRepository.getAllEquationsByUserIdAndIsPaid(userId, false)
+            .orElseThrow(EntityNotFoundException::new);
+
+        long totalCalculations = 0;
+        double totalDuration = 0;
+        double priceCoefficient = -0.05;
+
+
+        for (Equation equation : equations) {
+            totalDuration += equation.getDuration();
+            totalCalculations += 1;
+        }
+
+        totalDuration = totalDuration / 1000000;
+        double totalPrice = totalDuration * priceCoefficient;
+
+        return PaymentDTO.builder()
+            .totalDuration(totalDuration)
+            .totalCalculations(totalCalculations)
+            .totalPrice(totalPrice)
+            .build();
     }
 }

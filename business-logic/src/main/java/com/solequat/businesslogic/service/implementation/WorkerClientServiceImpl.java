@@ -20,6 +20,7 @@ import com.core.dto.EquationHistoryDTO;
 import com.core.dto.EquationIdDTO;
 import com.core.dto.EquationIntermediateResultDTO;
 import com.core.dto.EquationResultDTO;
+import com.core.dto.PaymentDTO;
 import com.core.entity.Equation;
 import com.core.entity.LinearSystemRequest;
 import com.core.entity.User;
@@ -61,6 +62,8 @@ public class WorkerClientServiceImpl implements WorkerClientService {
     private String uri5;
     @Value("${routes.uris.route6}")
     private String uri6;
+    @Value("${routes.uris.route7}")
+    private String uri7;
 
 
     public EquationIntermediateResultDTO calculateEquationFirstStage(MultipartFile matrixFile, MultipartFile vectorFile, String userId)
@@ -164,4 +167,17 @@ public class WorkerClientServiceImpl implements WorkerClientService {
             byte[].class);
     }
 
+
+    public PaymentDTO getAllEquationsByUserIdAndIsPaid(String userId) {
+        log.info("WorkerClientService: Get all equations by user id {} request to worker", userId);
+        ResponseEntity<PaymentDTO> response = restTemplate
+            .exchange(
+                uri7 + userId,
+                HttpMethod.GET,
+                null,
+                PaymentDTO.class
+            );
+
+        return response.getBody();
+    }
 }

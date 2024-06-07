@@ -41,6 +41,11 @@ public class Equation {
     @Column(name="result_id")
     private String resultId;
 
+
+    @Column(name="is_paid")
+    private Boolean isPaid = false;
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_logs_user"))
     private User user;
