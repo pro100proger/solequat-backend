@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.core.dto.EquationHistoryDTO;
 import com.core.dto.EquationIntermediateResultDTO;
 import com.core.dto.EquationResultDTO;
+import com.core.dto.PaymentDTO;
 import com.core.entity.User;
 import com.solequat.businesslogic.service.UserService;
 import com.solequat.businesslogic.service.WorkerClientService;
@@ -123,5 +124,14 @@ public class WorkerClientController {
             .contentLength(csvBytes.length)
             .contentType(MediaType.parseMediaType("text/csv"))
             .body(resource);
+    }
+
+    @GetMapping("/payment")
+    public ResponseEntity<PaymentDTO> getAllEquationsByUserIdAndIsPaid(@NotNull Principal principal) {
+        String email = principal.getName();
+        log.info("WorkerClientController: Get all equations of the user with email and isPaid=false {}", email);
+        User user = userService.findUserByEmail(email);
+        return ResponseEntity.status(HttpStatus.OK).body(
+            workerClientService.getAllEquationsByUserIdAndIsPaid(user.getId()));
     }
 }
