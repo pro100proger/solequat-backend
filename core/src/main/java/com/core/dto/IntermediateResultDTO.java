@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class EquationIntermediateResultDTO {
+public class IntermediateResultDTO {
     private String id;
     private LocalDateTime startCalculation;
 }

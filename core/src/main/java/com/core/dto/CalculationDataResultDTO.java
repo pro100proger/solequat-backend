@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class EquationResultDTO {
+public class CalculationDataResultDTO {
     private long duration;
     private LocalDateTime endCalculation;
     private LocalDateTime startCalculation;

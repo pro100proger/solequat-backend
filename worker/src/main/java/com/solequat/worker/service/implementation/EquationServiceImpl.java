@@ -1,7 +1,6 @@
 package com.solequat.worker.service.implementation;
 
 import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -14,14 +13,16 @@ import org.ejml.dense.row.CommonOps_DDRM;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.core.dto.EquationHistoryDTO;
-import com.core.dto.EquationIdDTO;
-import com.core.dto.EquationIntermediateResultDTO;
-import com.core.dto.EquationResultDTO;
+import com.core.dto.CalculationDataHistoryDTO;
+import com.core.dto.CalculationDataIdDTO;
+import com.core.dto.IntermediateResultDTO;
+import com.core.dto.CalculationDataResultDTO;
 import com.core.dto.PaymentDTO;
+import com.core.entity.Eigenvalues;
 import com.core.entity.Equation;
 import com.core.entity.LinearSystemRequest;
 import com.core.entity.LinearSystemResult;
+import com.core.repository.EigenvaluesRepository;
 import com.core.repository.EquationRepository;
 import com.core.repository.LinearSystemRepository;
 import com.core.repository.LinearSystemResultRepository;
@@ -35,21 +36,23 @@ import lombok.extern.slf4j.Slf4j;
 public class EquationServiceImpl implements EquationService {
 
     private final EquationRepository equationRepository;
+    private final EigenvaluesRepository eigenvaluesRepository;
     private final LinearSystemResultRepository linearSystemResultRepository;
     private final LinearSystemRepository linearSystemRepository;
 
     @Autowired
     public EquationServiceImpl(EquationRepository equationRepository,
-        LinearSystemResultRepository linearSystemResultRepository, LinearSystemRepository linearSystemRepository) {
+        EigenvaluesRepository eigenvaluesRepository, LinearSystemResultRepository linearSystemResultRepository, LinearSystemRepository linearSystemRepository) {
         this.equationRepository = equationRepository;
+        this.eigenvaluesRepository = eigenvaluesRepository;
         this.linearSystemResultRepository = linearSystemResultRepository;
         this.linearSystemRepository = linearSystemRepository;
     }
 
-    public EquationIntermediateResultDTO calculateEquationFirstStage(EquationIdDTO equationIdDTO) throws Exception {
+    public IntermediateResultDTO calculateEquationFirstStage(CalculationDataIdDTO equationIdDTO) throws Exception {
         log.info("EquationService: calculate equation first stage");
 
-        Optional<Equation> equationOptional = equationRepository.findById(equationIdDTO.getEquationId());
+        Optional<Equation> equationOptional = equationRepository.findById(equationIdDTO.getPostgresId());
         Equation equation;
         if (equationOptional.isPresent()) {
             equation = equationOptional.get();
@@ -57,7 +60,7 @@ public class EquationServiceImpl implements EquationService {
             throw new Exception("Error: equation is not present");
         }
 
-        Optional<LinearSystemRequest> linearSystemRequestOptional = linearSystemRepository.findById(equationIdDTO.getLinearSystemId());
+        Optional<LinearSystemRequest> linearSystemRequestOptional = linearSystemRepository.findById(equationIdDTO.getMongoDBId());
         LinearSystemRequest linearSystemRequest;
         if (linearSystemRequestOptional.isPresent()) {
             linearSystemRequest = linearSystemRequestOptional.get();
@@ -65,7 +68,7 @@ public class EquationServiceImpl implements EquationService {
             throw new Exception("Error: linearSystemRequest is not present");
         }
 
-        EquationIntermediateResultDTO firstStageResult = new EquationIntermediateResultDTO();
+        IntermediateResultDTO firstStageResult = new IntermediateResultDTO();
         firstStageResult.setStartCalculation(equation.getStartCalculation());
 
 
@@ -85,18 +88,13 @@ public class EquationServiceImpl implements EquationService {
         log.info("EquationService: calculate equation second stage");
         long start = System.currentTimeMillis();
 
-        EquationResultDTO secondStageResult = new EquationResultDTO();
+        CalculationDataResultDTO secondStageResult = new CalculationDataResultDTO();
 
         DMatrixRMaj matrix = new DMatrixRMaj(linearSystemRequest.getMatrix());
         DMatrixRMaj vector = new DMatrixRMaj(linearSystemRequest.getVector());
 
         DMatrixRMaj result = new DMatrixRMaj();
         CommonOps_DDRM.solve(matrix, vector, result);
-
-        log.info("vector");
-        log.info(String.valueOf(vector));
-        log.info("result");
-        log.info(String.valueOf(result));
 
         double[] resultArray = result.data;
 
@@ -125,14 +123,14 @@ public class EquationServiceImpl implements EquationService {
     }
 
 
-    public EquationResultDTO getEquationById(String id) {
+    public CalculationDataResultDTO getEquationById(String id) {
         Equation equation = equationRepository.getEquationById(id);
         log.info("EquationService: Get equation by id in service");
         if (!equationRepository.existsById(id)) {
             log.error(String.format("EquationService: Equation not found by id: %s", id));
             throw new RuntimeException();
         }
-        EquationResultDTO equationResultDTO = new EquationResultDTO();
+        CalculationDataResultDTO equationResultDTO = new CalculationDataResultDTO();
         equationResultDTO.setDuration(equation.getDuration());
         equationResultDTO.setEndCalculation(equation.getEndCalculation());
         equationResultDTO.setStartCalculation(equation.getStartCalculation());
@@ -143,13 +141,13 @@ public class EquationServiceImpl implements EquationService {
     }
 
 
-    public List<EquationHistoryDTO> getAllEquationsByUserId(String userId) {
+    public List<CalculationDataHistoryDTO> getAllEquationsByUserId(String userId) {
         log.info("EquationService: Get all equations by user id {} ", userId);
         List<Equation> equations = equationRepository.getAllEquationsByUserId(userId).orElseThrow(EntityNotFoundException::new);
 
         return equations.stream()
             .map(equation -> {
-                EquationHistoryDTO equationHistoryDTO = new EquationHistoryDTO();
+                CalculationDataHistoryDTO equationHistoryDTO = new CalculationDataHistoryDTO();
                 equationHistoryDTO.setId(equation.getId());
                 equationHistoryDTO.setStartCalculation(equation.getStartCalculation());
                 equationHistoryDTO.setEndCalculation(equation.getEndCalculation());
@@ -222,18 +220,24 @@ public class EquationServiceImpl implements EquationService {
         log.info("EquationService: Get all equations by user id and isPaid {} ", userId);
         List<Equation> equations = equationRepository.getAllEquationsByUserIdAndIsPaid(userId, false)
             .orElseThrow(EntityNotFoundException::new);
+        List<Eigenvalues> eigenvalues = eigenvaluesRepository.getAllEigenvaluesByUserIdAndIsPaid(userId, false)
+            .orElseThrow(EntityNotFoundException::new);
 
         long totalCalculations = 0;
         double totalDuration = 0;
-        double priceCoefficient = -0.05;
+        double priceCoefficient = -0.01;
 
 
         for (Equation equation : equations) {
             totalDuration += equation.getDuration();
             totalCalculations += 1;
         }
+        for (Eigenvalues eigenvalue : eigenvalues) {
+            totalDuration += eigenvalue.getDuration();
+            totalCalculations += 1;
+        }
 
-        totalDuration = totalDuration / 1000000;
+        totalDuration = totalDuration / 1000;
         double totalPrice = totalDuration * priceCoefficient;
 
         return PaymentDTO.builder()

@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.core.dto.EquationHistoryDTO;
-import com.core.dto.EquationIntermediateResultDTO;
-import com.core.dto.EquationResultDTO;
+import com.core.dto.CalculationDataHistoryDTO;
+import com.core.dto.IntermediateResultDTO;
+import com.core.dto.CalculationDataResultDTO;
 import com.core.dto.PaymentDTO;
 import com.core.entity.User;
 import com.solequat.businesslogic.service.UserService;
@@ -46,7 +46,7 @@ public class WorkerClientController {
     }
 
     @PostMapping("/equation")
-    public ResponseEntity<EquationIntermediateResultDTO> calculateEquation
+    public ResponseEntity<IntermediateResultDTO> calculateEquation
         (@RequestBody MultipartFile matrixFile, MultipartFile vectorFile, @NotNull Principal principal)
         throws IOException {
         log.info("WorkerClientController: Calculate equation");
@@ -57,14 +57,14 @@ public class WorkerClientController {
     }
 
     @GetMapping("/equation")
-    public ResponseEntity<EquationResultDTO> getEquationById(@RequestParam String id) {
+    public ResponseEntity<CalculationDataResultDTO> getEquationById(@RequestParam String id) {
         log.info("WorkerClientController: Get equation by id {}", id);
         return ResponseEntity.status(HttpStatus.OK).body(
             workerClientService.getEquationById(id));
     }
 
     @GetMapping("/equations")
-    public ResponseEntity<List<EquationHistoryDTO>> getAllEquations(@NotNull Principal principal) {
+    public ResponseEntity<List<CalculationDataHistoryDTO>> getAllEquations(@NotNull Principal principal) {
         String email = principal.getName();
         log.info("WorkerClientController: Get all equations of the user with email {}", email);
         User user = userService.findUserByEmail(email);
@@ -127,11 +127,73 @@ public class WorkerClientController {
     }
 
     @GetMapping("/payment")
-    public ResponseEntity<PaymentDTO> getAllEquationsByUserIdAndIsPaid(@NotNull Principal principal) {
+    public ResponseEntity<PaymentDTO> getAllCalculationsByUserIdAndIsPaid(@NotNull Principal principal) {
         String email = principal.getName();
-        log.info("WorkerClientController: Get all equations of the user with email and isPaid=false {}", email);
+        log.info("WorkerClientController: Get all calculations of the user with email and isPaid=false {}", email);
         User user = userService.findUserByEmail(email);
         return ResponseEntity.status(HttpStatus.OK).body(
-            workerClientService.getAllEquationsByUserIdAndIsPaid(user.getId()));
+            workerClientService.getAllCalculationsByUserIdAndIsPaid(user.getId()));
+    }
+
+    @PostMapping("/eigenvalues")
+    public ResponseEntity<IntermediateResultDTO> calculateEigenvalues
+        (@RequestBody MultipartFile matrixFile, @NotNull Principal principal) throws IOException {
+        log.info("WorkerClientController: Calculate eigenvalues");
+        String email = principal.getName();
+        User user = userService.findUserByEmail(email);
+        return ResponseEntity.status(HttpStatus.OK).body(
+            workerClientService.calculateEigenvaluesFirstStage(matrixFile, user.getId()));
+    }
+
+    @GetMapping("/eigenvalues")
+    public ResponseEntity<CalculationDataResultDTO> getEigenvaluesById(@RequestParam String id) {
+        log.info("WorkerClientController: Get eigenvalues by id {}", id);
+        return ResponseEntity.status(HttpStatus.OK).body(
+            workerClientService.getEigenvaluesById(id));
+    }
+
+    @GetMapping("/all/eigenvalues")
+    public ResponseEntity<List<CalculationDataHistoryDTO>> getAllEigenvalues(@NotNull Principal principal) {
+        String email = principal.getName();
+        log.info("WorkerClientController: Get all eigenvalues of the user with email {}", email);
+        User user = userService.findUserByEmail(email);
+        return ResponseEntity.status(HttpStatus.OK).body(
+            workerClientService.getAllEigenvaluesByUserId(user.getId()));
+    }
+
+    @GetMapping("/eigenvalues/result")
+    public ResponseEntity<Resource> getEigenvaluesResultById(@RequestParam String id) {
+        log.info("WorkerClientController: Get eigenvalues result by id {}", id);
+
+        byte[] csvBytes = workerClientService.getEigenvaluesResultById(id);
+
+        ByteArrayResource resource = new ByteArrayResource(csvBytes);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=eigenvaluesResult.csv");
+
+        return ResponseEntity.ok()
+            .headers(headers)
+            .contentLength(csvBytes.length)
+            .contentType(MediaType.parseMediaType("text/csv"))
+            .body(resource);
+    }
+
+    @GetMapping("/eigenvalues/matrix")
+    public ResponseEntity<Resource> getEigenvaluesMatrixById(@RequestParam String id) {
+        log.info("WorkerClientController: Get eigenvalues matrix by id {}", id);
+
+        byte[] csvBytes = workerClientService.getEigenvaluesMatrixById(id);
+
+        ByteArrayResource resource = new ByteArrayResource(csvBytes);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=eigenvaluesMatrix.csv");
+
+        return ResponseEntity.ok()
+            .headers(headers)
+            .contentLength(csvBytes.length)
+            .contentType(MediaType.parseMediaType("text/csv"))
+            .body(resource);
     }
 }
