@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.core.dto.EquationHistoryDTO;
-import com.core.dto.EquationIdDTO;
-import com.core.dto.EquationIntermediateResultDTO;
-import com.core.dto.EquationResultDTO;
+import com.core.dto.CalculationDataHistoryDTO;
+import com.core.dto.CalculationDataIdDTO;
+import com.core.dto.IntermediateResultDTO;
+import com.core.dto.CalculationDataResultDTO;
 import com.core.dto.PaymentDTO;
 import com.solequat.worker.service.EquationService;
 
@@ -33,8 +33,8 @@ public class EquationController {
     }
 
     @PostMapping("/equation")
-    public ResponseEntity<EquationIntermediateResultDTO> calculateEquation
-        (@RequestBody EquationIdDTO equationIdDTO) throws Exception {
+    public ResponseEntity<IntermediateResultDTO> calculateEquation
+        (@RequestBody CalculationDataIdDTO equationIdDTO) throws Exception {
         log.info("EquationController: calculate equation");
         return ResponseEntity.status(HttpStatus.OK).body(
             equationService.calculateEquationFirstStage(equationIdDTO));
@@ -42,14 +42,14 @@ public class EquationController {
 
 
     @GetMapping("/equation/{id}")
-    public ResponseEntity<EquationResultDTO> getEquationById(@PathVariable String id) {
+    public ResponseEntity<CalculationDataResultDTO> getEquationById(@PathVariable String id) {
         log.info("EquationController: Get equation by id {}", id);
         return ResponseEntity.status(HttpStatus.OK).body(
             equationService.getEquationById(id));
     }
 
     @GetMapping("/equations/{userId}")
-    public ResponseEntity<List<EquationHistoryDTO>> getAllEquations(@PathVariable String userId) {
+    public ResponseEntity<List<CalculationDataHistoryDTO>> getAllEquations(@PathVariable String userId) {
         log.info("EquationController: Get all equations of the user with id {}", userId);
         return ResponseEntity.status(HttpStatus.OK).body(
             equationService.getAllEquationsByUserId(userId));

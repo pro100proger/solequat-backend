@@ -74,7 +74,7 @@ public class AuthenticationService {
         ConfirmationToken confirmationToken = new ConfirmationToken(
             jwtToken,
             LocalDateTime.now(),
-            LocalDateTime.now().plusMinutes(15),
+            LocalDateTime.now().plusHours(6),
             user
         );
 

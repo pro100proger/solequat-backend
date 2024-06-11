@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class EquationHistoryDTO {
+public class CalculationDataHistoryDTO {
 
     private String id;
     private LocalDateTime startCalculation;

@@ -2,19 +2,19 @@ package com.solequat.worker.service;
 
 import java.util.List;
 
-import com.core.dto.EquationHistoryDTO;
-import com.core.dto.EquationIdDTO;
-import com.core.dto.EquationIntermediateResultDTO;
-import com.core.dto.EquationResultDTO;
+import com.core.dto.CalculationDataHistoryDTO;
+import com.core.dto.CalculationDataIdDTO;
+import com.core.dto.IntermediateResultDTO;
+import com.core.dto.CalculationDataResultDTO;
 import com.core.dto.PaymentDTO;
 
 public interface EquationService {
 
-    EquationIntermediateResultDTO calculateEquationFirstStage(EquationIdDTO equationIdDTO) throws Exception;
+    IntermediateResultDTO calculateEquationFirstStage(CalculationDataIdDTO equationIdDTO) throws Exception;
 
-    EquationResultDTO getEquationById(String id);
+    CalculationDataResultDTO getEquationById(String id);
 
-    List<EquationHistoryDTO> getAllEquationsByUserId(String userId);
+    List<CalculationDataHistoryDTO> getAllEquationsByUserId(String userId);
 
     byte[] getResultById(String id) throws Exception;
     byte[] getVectorById(String id) throws Exception;

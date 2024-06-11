@@ -68,3 +68,8 @@ routes:
     route5: http://localhost:8765/worker/api/v1/vector/
     route6: http://localhost:8765/worker/api/v1/matrix/
     route7: http://localhost:8765/worker/api/v1/payment/
+    route8: http://localhost:8765/worker/api/v1/eigenvalues
+    route9: http://localhost:8765/worker/api/v1/eigenvalues/
+    route10: http://localhost:8765/worker/api/v1/all/eigenvalues/
+    route11: http://localhost:8765/worker/api/v1/eigenvalues/result/
+    route12: http://localhost:8765/worker/api/v1/eigenvalues/matrix/

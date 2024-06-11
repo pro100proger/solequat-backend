@@ -16,14 +16,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.core.dto.EquationHistoryDTO;
-import com.core.dto.EquationIdDTO;
-import com.core.dto.EquationIntermediateResultDTO;
-import com.core.dto.EquationResultDTO;
+import com.core.dto.CalculationDataHistoryDTO;
+import com.core.dto.CalculationDataIdDTO;
+import com.core.dto.IntermediateResultDTO;
+import com.core.dto.CalculationDataResultDTO;
 import com.core.dto.PaymentDTO;
+import com.core.entity.Eigenvalues;
 import com.core.entity.Equation;
+import com.core.entity.EigenvaluesRequest;
 import com.core.entity.LinearSystemRequest;
 import com.core.entity.User;
+import com.core.repository.EigenvaluesRepository;
+import com.core.repository.EigenvaluesRequestRepository;
 import com.core.repository.EquationRepository;
 import com.core.repository.LinearSystemRepository;
 import com.core.repository.UserRepository;
@@ -37,16 +41,20 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkerClientServiceImpl implements WorkerClientService {
 
     private final EquationRepository equationRepository;
+    private final EigenvaluesRepository eigenvaluesRepository;
     private final UserRepository userRepository;
     private final LinearSystemRepository linearSystemRepository;
+    private final EigenvaluesRequestRepository eigenvaluesRequestRepository;
     private final RestTemplate restTemplate;
 
     @Autowired
-    public WorkerClientServiceImpl(EquationRepository equationRepository, UserRepository userRepository,
-        LinearSystemRepository linearSystemRepository, RestTemplate restTemplate) {
+    public WorkerClientServiceImpl(EquationRepository equationRepository, EigenvaluesRepository eigenvaluesRepository, UserRepository userRepository,
+        LinearSystemRepository linearSystemRepository, EigenvaluesRequestRepository eigenvaluesRequestRepository, RestTemplate restTemplate) {
         this.equationRepository = equationRepository;
+        this.eigenvaluesRepository = eigenvaluesRepository;
         this.userRepository = userRepository;
         this.linearSystemRepository = linearSystemRepository;
+        this.eigenvaluesRequestRepository = eigenvaluesRequestRepository;
         this.restTemplate = restTemplate;
     }
 
@@ -64,9 +72,19 @@ public class WorkerClientServiceImpl implements WorkerClientService {
     private String uri6;
     @Value("${routes.uris.route7}")
     private String uri7;
+    @Value("${routes.uris.route8}")
+    private String uri8;
+    @Value("${routes.uris.route9}")
+    private String uri9;
+    @Value("${routes.uris.route10}")
+    private String uri10;
+    @Value("${routes.uris.route11}")
+    private String uri11;
+    @Value("${routes.uris.route12}")
+    private String uri12;
 
 
-    public EquationIntermediateResultDTO calculateEquationFirstStage(MultipartFile matrixFile, MultipartFile vectorFile, String userId)
+    public IntermediateResultDTO calculateEquationFirstStage(MultipartFile matrixFile, MultipartFile vectorFile, String userId)
         throws IOException {
         log.info("WorkerClientService: Calculate request to worker");
 
@@ -106,38 +124,38 @@ public class WorkerClientServiceImpl implements WorkerClientService {
         linearSystemRequest.setVector(vectorArray);
         linearSystemRepository.save(linearSystemRequest);
 
-        EquationIdDTO equationIdDTO = new EquationIdDTO();
-        equationIdDTO.setEquationId(equation.getId());
-        equationIdDTO.setLinearSystemId(linearSystemRequest.getId());
+        CalculationDataIdDTO equationIdDTO = new CalculationDataIdDTO();
+        equationIdDTO.setPostgresId(equation.getId());
+        equationIdDTO.setMongoDBId(linearSystemRequest.getId());
 
 
 
         log.info("WorkerClientService: restTemplate request to worker");
-        EquationIntermediateResultDTO equationIntermediateResultDTO = restTemplate.postForObject(
+        IntermediateResultDTO intermediateResultDTO = restTemplate.postForObject(
             uri1,
             equationIdDTO,
-            EquationIntermediateResultDTO.class);
+            IntermediateResultDTO.class);
 
         log.info("WorkerClientService: Response from worker");
-        return equationIntermediateResultDTO;
+        return intermediateResultDTO;
     }
 
-    public EquationResultDTO getEquationById(String id) {
+    public CalculationDataResultDTO getEquationById(String id) {
         log.info("WorkerClientService: Get equation by id request to worker");
 
         return restTemplate.getForObject(
             uri2 + id,
-            EquationResultDTO.class);
+            CalculationDataResultDTO.class);
     }
 
-    public List<EquationHistoryDTO> getAllEquationsByUserId(String userId) {
+    public List<CalculationDataHistoryDTO> getAllEquationsByUserId(String userId) {
         log.info("WorkerClientService: Get all equations by user id {} request to worker", userId);
-        ResponseEntity<List<EquationHistoryDTO>> response = restTemplate
+        ResponseEntity<List<CalculationDataHistoryDTO>> response = restTemplate
             .exchange(
                 uri3 + userId,
             HttpMethod.GET,
             null,
-            new ParameterizedTypeReference<List<EquationHistoryDTO>>() {}
+            new ParameterizedTypeReference<List<CalculationDataHistoryDTO>>() {}
         );
 
         return response.getBody();
@@ -168,8 +186,8 @@ public class WorkerClientServiceImpl implements WorkerClientService {
     }
 
 
-    public PaymentDTO getAllEquationsByUserIdAndIsPaid(String userId) {
-        log.info("WorkerClientService: Get all equations by user id {} request to worker", userId);
+    public PaymentDTO getAllCalculationsByUserIdAndIsPaid(String userId) {
+        log.info("WorkerClientService: Get all calculations by user id {} request to worker", userId);
         ResponseEntity<PaymentDTO> response = restTemplate
             .exchange(
                 uri7 + userId,
@@ -179,5 +197,88 @@ public class WorkerClientServiceImpl implements WorkerClientService {
             );
 
         return response.getBody();
+    }
+
+    public IntermediateResultDTO calculateEigenvaluesFirstStage(MultipartFile matrixFile, String userId)
+        throws IOException {
+        log.info("WorkerClientService: Calculate eigenvalues request to worker");
+
+        LocalDateTime startCalculation = LocalDateTime.now();
+
+
+        Eigenvalues eigenvalues = new Eigenvalues(startCalculation);
+
+        User user = userRepository.findById(userId).orElseThrow(EntityNotFoundException::new);
+        eigenvalues.setUser(user);
+        eigenvaluesRepository.save(eigenvalues);
+
+        EigenvaluesRequest eigenvaluesRequest = new EigenvaluesRequest();
+        byte[] matrixBytes = matrixFile.getBytes();
+        String fileContent = new String(matrixBytes);
+
+        double[][] matrixArray = Arrays.stream(fileContent.trim().split("\n"))
+            .map(line -> Arrays.stream(line.trim().split(";"))
+                .mapToDouble(Double::parseDouble)
+                .toArray())
+            .toArray(double[][]::new);
+
+        log.info(Arrays.deepToString(matrixArray));
+
+        eigenvaluesRequest.setMatrix(matrixArray);
+
+
+        eigenvaluesRequestRepository.save(eigenvaluesRequest);
+
+        CalculationDataIdDTO eigenvaluesIdDTO = new CalculationDataIdDTO();
+        eigenvaluesIdDTO.setPostgresId(eigenvalues.getId());
+        eigenvaluesIdDTO.setMongoDBId(eigenvaluesRequest.getId());
+
+
+        log.info("WorkerClientService: restTemplate eigenvalues request to worker");
+        IntermediateResultDTO intermediateResultDTO = restTemplate.postForObject(
+            uri8,
+            eigenvaluesIdDTO,
+            IntermediateResultDTO.class);
+
+        log.info("WorkerClientService: Response from worker");
+        return intermediateResultDTO;
+    }
+
+
+    public CalculationDataResultDTO getEigenvaluesById(String id) {
+        log.info("WorkerClientService: Get eigenvalues by id request to worker");
+
+        return restTemplate.getForObject(
+            uri9 + id,
+            CalculationDataResultDTO.class);
+    }
+
+    public List<CalculationDataHistoryDTO> getAllEigenvaluesByUserId(String userId) {
+        log.info("WorkerClientService: Get all eigenvalues by user id {} request to worker", userId);
+        ResponseEntity<List<CalculationDataHistoryDTO>> response = restTemplate
+            .exchange(
+                uri10 + userId,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<CalculationDataHistoryDTO>>() {}
+            );
+
+        return response.getBody();
+    }
+
+    public byte[] getEigenvaluesResultById(String id) {
+        log.info("WorkerClientService: Get eigenvalues result by id. ");
+
+        return restTemplate.getForObject(
+            uri11 + id,
+            byte[].class);
+    }
+
+    public byte[] getEigenvaluesMatrixById(String id) {
+        log.info("WorkerClientService: Get eigenvalues matrix by id: {}", id);
+
+        return restTemplate.getForObject(
+            uri12 + id,
+            byte[].class);
     }
 }
